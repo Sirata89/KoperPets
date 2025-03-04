@@ -7,6 +7,8 @@ This script adds a small chance to gain taming skill when your pet fights, decre
 
 WARNING: If you have modified your basecreature.cs script, do not replace it with this one. You will need to manually add the call for taming gain. Search my basecreature.cs script for KOPER.
 
+(This has been save file safe to add and remove for me, as it serializes no data. BUT, back up your save just for that warm fuzzy)
+
 1. Be running current version of SoS
 
 2. Place KoperPets folder in Data/Scripts/Custom

@@ -18,3 +18,5 @@ WARNING: If you have modified your basecreature.cs script, do not replace it wit
 3. Backup your original Data/Scripts/Mobiles/Base/BaseCreature.cs
 
 4. Place BaseCreature.cs from this repositiory in Data/Scripts/Mobiles/Base, replacing the original
+
+5. Edit KoperSkillConfig to increase rate of skill gain.

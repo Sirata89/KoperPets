@@ -6080,6 +6080,17 @@ namespace Server.Mobiles
 
 				if ( m_ControlMaster != null )
 					m_ControlMaster.InvalidateProperties();
+
+				#region KoperHerding
+				//KOPERPETS If the AI state is changed to a valid pet command, try to gain Herding skill
+        		if (ControlMaster != null && Controlled)
+        		{
+            		if (value == OrderType.Come || value == OrderType.Guard || value == OrderType.Follow || value == OrderType.Stay)
+            		{
+                		Server.Custom.KoperPets.KoperHerdingGain.TryGainHerdingSkill(ControlMaster);
+            		}
+        		}
+				#endregion
 			}
 		}
 

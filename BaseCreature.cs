@@ -3995,16 +3995,21 @@ namespace Server.Mobiles
 			base.OnDamage( amount, from, willKill );
 			
 			#region KoperPets
-			// KOPERPETS CHANGE: Trigger skill gain
-    		PlayerMobile owner = this.ControlMaster as PlayerMobile;
-			
-    		if (this.Controlled && owner != null)
-    		{
-        		// Call the skill gain system, passing the pet (this) and the attacker
-        		Server.Custom.KoperPets.PetTamingSkillGain.TryTamingGain(this, from);
-    		}
-			#endregion
+    		if (from == null)
+        		return;
 
+			BaseCreature petAttacker = from as BaseCreature;
+			if (petAttacker != null && petAttacker.Controlled)
+			{
+    			PlayerMobile owner = petAttacker.ControlMaster as PlayerMobile;
+    			if (owner != null)
+    			{
+        			// Pet successfully hit an enemy, award XP
+        			Server.Custom.KoperPets.KoperPetManager.AwardXP(petAttacker, this);
+        			Server.Custom.KoperPets.PetTamingSkillGain.TryTamingGain(petAttacker, this);
+    			}
+			}
+			#endregion
 		}
 
 		public virtual void OnDamagedBySpell( Mobile from )

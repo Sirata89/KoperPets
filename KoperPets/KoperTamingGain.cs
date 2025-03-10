@@ -12,7 +12,7 @@ namespace Server.Custom.KoperPets
         // Dictionary to track cooldowns (PlayerMobile -> Last Taming Gain Time)
         private static Dictionary<PlayerMobile, DateTime> _tamingCooldowns = new Dictionary<PlayerMobile, DateTime>();
 
-        private static readonly TimeSpan TamingCooldown = TimeSpan.FromSeconds(60); //  Set cooldown time (60 Seconds default)
+        private static readonly TimeSpan TamingCooldown = TimeSpan.FromSeconds(MyServerSettings.KoperCooldown()); //  Set cooldown time (20 Seconds default)
 
         private static readonly string[] TamingMessages = new string[]
         {
@@ -82,10 +82,77 @@ namespace Server.Custom.KoperPets
             "*{0} fights as if their very survival depends on it!*"
         };
 
-
-        public static void TryTamingGain(BaseCreature pet, Mobile target)
+        public static void TryTamingGain(BaseCreature petAttacker, Mobile target)
         {
-            if (pet == null || target == null)
+            if (petAttacker == null || target == null || !MyServerSettings.KoperPets())
+                return;
+
+            Console.WriteLine("Gain Skill triggered");
+
+            PlayerMobile owner = petAttacker.ControlMaster as PlayerMobile;
+            
+            if (owner == null)
+                return;
+
+            // Only award taming XP if the pet is attacking a valid wild NPC, NOT another controlled pet
+            BaseCreature targetCreature = target as BaseCreature;
+            if (targetCreature != null && targetCreature.Controlled)
+                return; // Exit if the target is another controlled pet (PvP pet fights don't give taming XP)
+
+            // Check if player is on cooldown
+            DateTime lastGainTime;
+            if (_tamingCooldowns.TryGetValue(owner, out lastGainTime))
+            {
+                if (DateTime.UtcNow < lastGainTime + TamingCooldown)
+                {
+                    Console.WriteLine(" Taming gain still on cooldown");
+                    return; // Player is still on cooldown, exit without gaining skill
+                }
+            }
+
+            double tamingSkill = owner.Skills[SkillName.Taming].Base;
+            double gainChance = 0.0;
+            double minGain = 0.0, maxGain = 0.0;
+            double tamingMultiplier = MyServerSettings.KoperTamingChance();
+
+            // Ensure valid multiplier value
+            if (tamingMultiplier <= 0) tamingMultiplier = 1.0;
+
+            // Determine gain chance and amount based on skill level
+            if (tamingSkill <= 30.0) { gainChance = 0.20 * tamingMultiplier; minGain = 0.1; maxGain = 1.0; }
+            else if (tamingSkill <= 50.0) { gainChance = 0.15 * tamingMultiplier; minGain = 0.1; maxGain = 0.5; }
+            else if (tamingSkill <= 70.0) { gainChance = 0.10 * tamingMultiplier; minGain = 0.1; maxGain = 0.2; }
+            else if (tamingSkill < 100.0) { gainChance = 0.05 * tamingMultiplier; minGain = 0.1; maxGain = 0.1; }
+            else return; // No gain if above 100
+
+            // Attempt taming skill gain
+            if (Utility.RandomDouble() < gainChance)
+            {
+                double tamingGain = minGain + (Utility.RandomDouble() * (maxGain - minGain)); // Random within range
+                owner.Skills[SkillName.Taming].Base += tamingGain;
+
+                // Select a random taming message
+                string message = string.Format(TamingMessages[Utility.Random(TamingMessages.Length)], petAttacker.Name);
+
+                // Display message in system log
+                owner.SendMessage(0x83A, message);
+
+                // Set cooldown time for this player
+                _tamingCooldowns[owner] = DateTime.UtcNow;
+            }
+            else
+            {
+                Console.WriteLine("Tried to gain taming, didnt hit numnber");
+                // 10% chance to trigger a battle cry if no taming skill was gained
+                TryPetBattleCry(petAttacker);
+            }
+        }
+
+
+
+        /*public static void TryTamingGain(BaseCreature pet, Mobile target)
+        {
+            if (pet == null || target == null || !MyServerSettings.KoperPets())
                 return;
 
             PlayerMobile owner = pet.ControlMaster as PlayerMobile;
@@ -106,16 +173,16 @@ namespace Server.Custom.KoperPets
             double tamingSkill = owner.Skills[SkillName.Taming].Base;
             double gainChance = 0.0;
             double minGain = 0.0, maxGain = 0.0;
-            double tamingMultiplier = Server.Custom.KoperPets.KoperSkillConfig.TamingChanceMultiplier;  // Determine gain chance and amount based on skill level
+            double tamingMultiplier = MyServerSettings.KoperTamingChance();  // Determine gain chance and amount based on skill level
+            //double tamingMultiplier = Server.Custom.KoperPets.KoperSkillConfig.TamingChanceMultiplier;  // Determine gain chance and amount based on skill level
 
             // Determine gain chance and amount based on skill level
             if (tamingMultiplier <= 0) tamingMultiplier = 1.0; // Ensure valid value
-            if (tamingSkill <= 30.0) { gainChance = 0.20 * tamingMultiplier; minGain = 0.1; maxGain = 0.3; }
-            else if (tamingSkill <= 50.0) { gainChance = 0.15 * tamingMultiplier; minGain = 0.1; maxGain = 0.2; }
-            else if (tamingSkill <= 70.0) { gainChance = 0.10 * tamingMultiplier; minGain = 0.1; maxGain = 0.1; }
+            if (tamingSkill <= 30.0) { gainChance = 0.20 * tamingMultiplier; minGain = 0.1; maxGain = 1.0; }
+            else if (tamingSkill <= 50.0) { gainChance = 0.15 * tamingMultiplier; minGain = 0.1; maxGain = 0.5; }
+            else if (tamingSkill <= 70.0) { gainChance = 0.10 * tamingMultiplier; minGain = 0.1; maxGain = 0.2; }
             else if (tamingSkill < 100.0) { gainChance = 0.05 * tamingMultiplier; minGain = 0.1; maxGain = 0.1; }
             else return; // No gain if above 100
-
 
             // Attempt taming skill gain
             if (Utility.RandomDouble() < gainChance)
@@ -124,7 +191,7 @@ namespace Server.Custom.KoperPets
                 owner.Skills[SkillName.Taming].Base += tamingGain;
 
                 // Select a random taming message
-                string message = TamingMessages[Utility.Random(TamingMessages.Length)];
+                string message = string.Format(TamingMessages[Utility.Random(TamingMessages.Length)], pet.Name);
 
                 // Display message in system log
                 owner.SendMessage(0x83A, message);
@@ -137,18 +204,18 @@ namespace Server.Custom.KoperPets
                 // 10% chance to trigger a battle cry if no taming skill was gained
                 TryPetBattleCry(pet);
             }
-        }
+        }*/
 
         public static void TryPetBattleCry(BaseCreature pet)
         {
             if (pet == null || pet.ControlMaster == null)
                 return;
 
-            if (Utility.RandomDouble() < 0.10) // 10% chance if no skill gain
+            if (Utility.RandomDouble() < 0.10 && MyServerSettings.KoperPetsImmersive()) // 10% chance if no skill gain
             {
                 string battleCry = String.Format(BattleCries[Utility.Random(BattleCries.Length)], pet.Name);
 
-                // ✅ Display battle cry in grey text
+                // Display battle cry in grey text
                 pet.PublicOverheadMessage(MessageType.Emote, 0x83A, false, battleCry);
             }
         }

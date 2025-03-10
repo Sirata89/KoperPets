@@ -8,7 +8,7 @@ namespace Server.Custom.KoperPets
     public static class KoperHerdingGain
     {
         private static readonly Dictionary<Mobile, DateTime> _cooldowns = new Dictionary<Mobile, DateTime>();
-        private static readonly TimeSpan CooldownTime = TimeSpan.FromSeconds(60); // 60-second cooldown
+        private static readonly TimeSpan CooldownTime = TimeSpan.FromSeconds(MyServerSettings.KoperCooldown()); // 20-second cooldown
 
         private static readonly string[] SuccessMessages = new string[]
         {
@@ -31,8 +31,8 @@ namespace Server.Custom.KoperPets
 
         public static void TryGainHerdingSkill(Mobile owner)
         {
-            if (owner == null || !owner.Alive)
-                return; // No skill gain for dead players
+            if (owner == null || !owner.Alive || !MyServerSettings.KoperPets())
+                return; // No skill gain for dead players/system disabled
 
             // Check if the player is on cooldown
             if (_cooldowns.ContainsKey(owner) && DateTime.UtcNow < _cooldowns[owner])
@@ -44,14 +44,14 @@ namespace Server.Custom.KoperPets
             double gainChance;
             double minGain;
             double maxGain;
-            double herdingMultiplier = Server.Custom.KoperPets.KoperSkillConfig.HerdingChanceMultiplier;
+            double herdingMultiplier = MyServerSettings.KoperHerdingChance();
 
 
             // Determine gain chance and amount based on skill level
             if (herdingMultiplier <= 0) herdingMultiplier = 1.0; // Ensure valid value
-            if (herdingSkill <= 30.0) { gainChance = 0.20 * herdingMultiplier; minGain = 0.1; maxGain = 0.3; }
-            else if (herdingSkill <= 50.0) { gainChance = 0.15 * herdingMultiplier; minGain = 0.1; maxGain = 0.2; }
-            else if (herdingSkill <= 70.0) { gainChance = 0.10 * herdingMultiplier; minGain = 0.1; maxGain = 0.1; }
+            if (herdingSkill <= 30.0) { gainChance = 0.20 * herdingMultiplier; minGain = 0.1; maxGain = 1.0; }
+            else if (herdingSkill <= 50.0) { gainChance = 0.15 * herdingMultiplier; minGain = 0.1; maxGain = 0.5; }
+            else if (herdingSkill <= 70.0) { gainChance = 0.10 * herdingMultiplier; minGain = 0.1; maxGain = 0.2; }
             else if (herdingSkill < 100.0) { gainChance = 0.05 * herdingMultiplier; minGain = 0.1; maxGain = 0.1; }
             else return; // No gain if at max skill
 
@@ -61,8 +61,10 @@ namespace Server.Custom.KoperPets
                 owner.Skills[SkillName.Herding].Base += skillGain;
 
                 // Select a random message for variety
-                owner.SendMessage(SuccessMessages[Utility.Random(SuccessMessages.Length)]);
-
+                if (MyServerSettings.KoperPetsImmersive()) 
+                {
+                    owner.SendMessage(SuccessMessages[Utility.Random(SuccessMessages.Length)]);
+                }
                 // Start cooldown timer
                 _cooldowns[owner] = DateTime.UtcNow + CooldownTime;
             }

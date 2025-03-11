@@ -241,7 +241,7 @@ namespace Server.Custom.KoperPets
         {
             writer.Write(Serial.Value);
             writer.Write(PetName);
-            writer.Write(PetType.FullName); // ✅ Save full type name as string
+            writer.Write(PetType.FullName); // Save full type name as string
             writer.Write(ControlSlots);
             writer.Write(Hits);
             writer.Write(Stam);

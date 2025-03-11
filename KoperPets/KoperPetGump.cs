@@ -42,6 +42,27 @@ namespace Server.Custom.KoperPets
             string petGender = KoperPetManager.GetGender(m_PetData);
             string petLevel = "Level: " + m_PetData.Level.ToString();
 
+            // Define cooldown duration (Example: 12 hours)
+            TimeSpan breedingCooldown = TimeSpan.FromHours(12);
+
+            // Calculate remaining cooldown
+            TimeSpan timeRemaining = (m_PetData.LastBreedingTime + breedingCooldown) - DateTime.UtcNow;
+            string cooldownText;
+
+            // Ensure timeRemaining isn't negative
+            if (timeRemaining.TotalSeconds > 0)
+            {
+                if (timeRemaining.TotalHours >= 1)
+                    cooldownText = string.Format("{0} Hours {1} Minutes", (int)timeRemaining.TotalHours, timeRemaining.Minutes);
+                else
+                    cooldownText = string.Format("{0} Minutes", (int)timeRemaining.TotalMinutes);
+            }
+            else
+            {
+                cooldownText = "Ready to breed!";
+            }
+
+
             this.Closable = true;
             this.Disposable = true;
             this.Dragable = true;
@@ -50,7 +71,7 @@ namespace Server.Custom.KoperPets
             this.AddImage(3, 6, 7034);
             this.AddLabel(GetCenteredX("Lineage Tracking", gumpWidth), 17, 1153, @"Lineage Tracking"); //220
             this.AddLabel(GetCenteredX(m_Pet.Name, gumpWidth), 40, 1153, m_Pet.Name);
-            this.AddImage(178, 20, 57);
+            this.AddImage(173, 20, 57);
             this.AddImage(346, 20, 59);
             this.AddLabel(GetCenteredX(petLevel, gumpWidth), 77, 1153, petLevel);
             this.AddLabel(409, 35, 1153, string.Format("Lineage Points: {0}", m_PetData.Traits));
@@ -81,8 +102,8 @@ namespace Server.Custom.KoperPets
             this.AddLabel(423, 125, 1153, @"Resistances");
             this.AddLabel(252, 331, 1153, @"Breed");
             this.AddLabel(298, 378, 1153, @"Cooldown:");
-            this.AddLabel(368, 379, 1153, @"9 Minutes"); // TODO add dynamic cooldown calc
-            this.AddLabel(415, 152, 1153, string.Format("Physical: {0}", m_Pet.PhysicalResistance));
+            this.AddLabel(368, 379, 1153, cooldownText); // TODO add dynamic cooldown calc
+            this.AddLabel(415, 152, 1153, string.Format("Physical:  {0}", m_Pet.PhysicalResistance));
             this.AddLabel(415, 176, 1153, string.Format("Fire:     {0}", m_Pet.FireResistance));
             this.AddLabel(415, 199, 1153, string.Format("Cold:     {0}", m_Pet.ColdResistance));
             this.AddLabel(415, 221, 1153, string.Format("Poison:   {0}", m_Pet.PoisonResistance));

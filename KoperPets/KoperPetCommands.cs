@@ -14,7 +14,7 @@ namespace Server.Custom.KoperPets
             CommandSystem.Register("CheckPet", AccessLevel.Player, new CommandEventHandler(CheckPet_OnCommand));
             CommandSystem.Register("PetGump", AccessLevel.Player, new CommandEventHandler(PetGump_OnCommand));
             CommandSystem.Register("BreedPet", AccessLevel.Player, new CommandEventHandler(BreedPet_OnCommand));
-            CommandSystem.Register("StablePet", AccessLevel.Player, new CommandEventHandler(StablePet_OnCommand));
+            CommandSystem.Register("NurseryStore", AccessLevel.Player, new CommandEventHandler(NurseryStore_OnCommand));
             CommandSystem.Register("RetrievePet", AccessLevel.Player, new CommandEventHandler(RetrievePet_OnCommand));
             CommandSystem.Register("StableList", AccessLevel.Player, new CommandEventHandler(StableList_OnCommand));
         }
@@ -191,21 +191,21 @@ namespace Server.Custom.KoperPets
             }
         }
 
-        [Usage("StablePet")]
+        [Usage("NurseryStore")]
         [Description("Click on your pet to store it in the special Koper Pet Stable.")]
-        public static void StablePet_OnCommand(CommandEventArgs e)
+        public static void NurseryStore_OnCommand(CommandEventArgs e)
         {
             PlayerMobile player = e.Mobile as PlayerMobile;
             if (player != null)
             {
                 player.SendMessage("Target the pet you wish to stable.");
-                player.Target = new StablePetTarget();
+                player.Target = new NurseryStoreTarget();
             }
         }
 
-        private class StablePetTarget : Target
+        private class NurseryStoreTarget : Target
         {
-            public StablePetTarget() : base(10, false, TargetFlags.None) { }
+            public NurseryStoreTarget() : base(10, false, TargetFlags.None) { }
 
             protected override void OnTarget(Mobile from, object targeted)
             {
@@ -224,7 +224,7 @@ namespace Server.Custom.KoperPets
             }
         }
 
-        [Usage("RetrievePet")]
+        [Usage("NurseryRetrieve")]
         [Description("Retrieve a stored pet from the Koper Pet Stable.")]
         public static void RetrievePet_OnCommand(CommandEventArgs e)
         {
@@ -297,4 +297,5 @@ namespace Server.Custom.KoperPets
             KoperPetNursery.ListStable(player);
             }
         }
+
     }

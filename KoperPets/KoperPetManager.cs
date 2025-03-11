@@ -193,11 +193,11 @@ namespace Server.Custom.KoperPets
                     Serial serial = (Serial)reader.ReadInt32();
                     BaseCreature pet = World.FindMobile(serial) as BaseCreature;
 
-                    // **Skip pets that no longer exist or are dead, but confirm bonded logic
-                    if ( pet == null || pet.Deleted || !pet.Alive || pet.Hits <= 0)
+                    // Skip pets that no longer exist or are dead, but confirm bonded logic
+                    if (pet == null || pet.Deleted || !pet.Alive || pet.Hits <= 0)
                     {
-                            Console.WriteLine("[KoperPetManager] Removing dead or missing pet: " + serial);
-                            continue;
+                        Console.WriteLine("[KoperPetManager] Removing dead or missing pet: " + serial);
+                        continue;
                     }
 
                     KoperPetData petData = new KoperPetData(serial);
@@ -209,7 +209,7 @@ namespace Server.Custom.KoperPets
                     petData.Adjective = reader.ReadInt32(); // Load as int index
                     petData.Pedigree = reader.ReadInt32();
                     petData.LastBreedingTime = DateTime.FromBinary(reader.ReadInt64());
-                    
+
 
                     petDataCache[serial] = petData;
                     Console.WriteLine("[KoperPetManager] Loaded pet into cache: " + serial);
@@ -217,6 +217,41 @@ namespace Server.Custom.KoperPets
             }
 
             Console.WriteLine("[KoperPetManager] Pet loading complete.");
+        }
+
+        public static void TransferPetData(KoperPetData storedPetData, BaseCreature newPet)
+        {
+            if (storedPetData == null || newPet == null)
+            {
+                Console.WriteLine("[KoperPetManager] TransferPetData failed: storedPetData or newPet is null.");
+                return;
+            }
+
+            Console.WriteLine("[KoperPetManager] Transferring pet data for " + newPet.Name);
+
+            // Ensure the new pet is in the cache
+            if (!petDataCache.ContainsKey(newPet.Serial))
+            {
+                petDataCache[newPet.Serial] = new KoperPetData(newPet.Serial);
+            }
+
+            KoperPetData newPetData = petDataCache[newPet.Serial];
+
+            // Copy stored data over
+            newPetData.Experience = storedPetData.Experience;
+            newPetData.Level = storedPetData.Level;
+            newPetData.MaxLevel = storedPetData.MaxLevel;
+            newPetData.Traits = storedPetData.Traits;
+            newPetData.Pedigree = storedPetData.Pedigree;
+            newPetData.Adjective = storedPetData.Adjective;
+            newPetData.Gender = storedPetData.Gender;
+            newPetData.LastBreedingTime = storedPetData.LastBreedingTime;
+
+            // Apply adjective modifiers again
+            //KoperPetNaming.ApplyAdjectiveModifiers(newPet, newPetData.Adjective);
+            KoperPetNaming.RenamePet(newPet, KoperPetNaming.AdjectiveModifiers[newPetData.Adjective].Key);
+
+            Console.WriteLine(string.Format("[KoperPetManager] Data transfer complete for {0} (Level {1}, XP {2}).", newPet.Name, newPetData.Level, newPetData.Experience));
         }
 
         public static int GetExperience(BaseCreature pet)
@@ -292,7 +327,7 @@ namespace Server.Custom.KoperPets
             {
                 petDataCache[pet.Serial].Pedigree = p;
             }
-            
+
             return 0;
         }
 
@@ -351,14 +386,14 @@ namespace Server.Custom.KoperPets
             {
                 data.Experience -= data.Level * 100;
                 data.Level++;
-                data.Traits+=3;
+                data.Traits += 3;
                 pet.Say("I have leveled up to level " + data.Level + "!");
             }
 
             petDataCache[pet.Serial] = data; // Ensure updated data is saved
         }
 
-        public static int GetXPNeeded(KoperPetData petData) 
+        public static int GetXPNeeded(KoperPetData petData)
         {
             int xpNeeded = petData.Level * (petData.Pedigree + 1) * 100;  // XP needed to level up (a level 1, pedigree 0, would require 100. A level 1 & 5 pedigree would require 500)
 
@@ -402,7 +437,7 @@ namespace Server.Custom.KoperPets
         public int Traits { get; set; }
         public int Gender { get; set; }
         public int Pedigree { get; set; }
-        public DateTime LastBreedingTime {get; set;}
+        public DateTime LastBreedingTime { get; set; }
 
         public KoperPetData(Serial serial)
         {

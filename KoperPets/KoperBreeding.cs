@@ -30,8 +30,8 @@ namespace Server.Custom.KoperPets
     public static class KoperBreeding
     {
         private static readonly Random random = new Random();
-        private static TimeSpan breedingCooldown = TimeSpan.FromMinutes(breedingScalar);
         private static int breedingScalar = 20;
+        private static TimeSpan breedingCooldown = TimeSpan.FromMinutes(breedingScalar);
         private static int GetCategoryStart(int adjective)
         {
             if (adjective >= 0 && adjective <= 9) return 0;     // Strength

@@ -25,7 +25,8 @@ namespace Server.Custom.KoperPets
             if (File.Exists(KoperPetManager.saveFilePath))
             {
                 Console.WriteLine("[KoperPetManager] OnServerStartup() Save file found, aborting registering new pets");
-                KoperPetManager.LoadAllPets(); // DEBUG
+                KoperPetManager.LoadAllPets();
+                KoperPetNursery.LoadStableData(); // DEBUG
                 return;
             }
 
@@ -51,11 +52,13 @@ namespace Server.Custom.KoperPets
         {
             Console.WriteLine("[KoperPetManager] Server shutting down, saving all pets...");
             KoperPetManager.SaveAllPets();
+            KoperPetNursery.SaveStableData();
             Console.WriteLine("[KoperPetManager] Finished saving");
         }
 
         private static void OnWorldSave(WorldSaveEventArgs e) {
             KoperPetManager.SaveAllPets();
+            KoperPetNursery.SaveStableData();
         }
         
         // Fallback to ensure pets get registerd if all other methods fail

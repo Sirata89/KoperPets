@@ -13,6 +13,18 @@ namespace Server.Custom.KoperPets
         {
             get { return _adjectiveModifiers; }
         }
+
+        public static string GetAdjectiveDescription(int value)
+        {
+            string description;
+
+            if (AdjectiveDescriptions.TryGetValue(value, out description))
+            {
+                return description;
+            }
+            return "No description available for this trait.";
+        }
+
         private static readonly Dictionary<int, KeyValuePair<string, int[]>> _adjectiveModifiers =
             new Dictionary<int, KeyValuePair<string, int[]>>()
         {
@@ -108,10 +120,104 @@ namespace Server.Custom.KoperPets
             {  99, new KeyValuePair<string, int[]>("DEBUG",         new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }) }
         };
 
+        private static readonly Dictionary<int, string> AdjectiveDescriptions = new Dictionary<int, string>()
+        {
+            // Strength based
+            { 0,  "Forged in the fires of valor, this creature possesses unyielding strength, able to topple foes with sheer force." },
+            { 1,  "Broad of shoulder and thick of limb, this beast is built for power, though at the cost of some agility." },
+            { 2,  "A massive frame, thick as the walls of Blackthorn’s keep, grants this creature incredible durability, yet it moves ponderously." },
+            { 3,  "Savage and untamed, this brute crashes through enemies with unrelenting might, though its reflexes suffer for its bulk." },
+            { 4,  "Resembling the legendary colossi of ancient Sosaria, this beast towers over others, a true juggernaut of muscle and sinew." },
+            { 5,  "Carrying the strength of a forgotten Titan, this creature moves mountains with its blows but lacks the nimbleness of lesser beings." },
+            { 6,  "As large as the Behemoths of old, this beast's might is matched only by its hunger for battle, leaving destruction in its wake." },
+            { 7,  "Drenched in the blood of foes, this monstrous titan wields unmatched strength, though its agility is dulled by sheer mass." },
+            { 8,  "Born of primordial chaos, this gargantuan creature shakes the ground with each step, an unstoppable force of raw power." },
+            { 9,  "Carrying the legacy of the Titans themselves, this being is as close to a living legend as the world will ever see." },
+            // Dex based
+            { 10, "This creature moves with remarkable swiftness, darting through the battlefield like a trained fencer avoiding a mortal strike." },
+            { 11, "Graceful and fleet-footed, it glides across terrain as though the very winds of Britannia guide its steps." },
+            { 12, "Lightning-fast, this creature’s reflexes blur before the eye, its strikes and evasions as sudden as a tempest’s fury." },
+            { 13, "Elusive and evasive, it weaves through combat with unnatural grace, making even the most seasoned warriors struggle to land a blow." },
+            { 14, "Ghostly in movement, this being flickers between positions as though stepping through the Veil, always one step ahead of its foes." },
+            { 15, "A creature of shadow, it vanishes into dim light and reappears with uncanny speed, its presence felt only when it strikes." },
+            { 16, "Born of the wind, this beast moves as if weightless, its form untethered by the laws of men and nature alike." },
+            { 17, "A phantom of the battlefield, it drifts and lunges with eerie precision, its touch cold as a wraith’s whisper." },
+            { 18, "So fast it seems to shimmer, its blinding movements confound the eye, making it appear as if it exists in two places at once." },
+            { 19, "Untouchable, it dodges with supernatural ease, as though Fate itself denies its enemies the chance to land a blow." },
+            // Int Based
+            { 20, "This creature hums with runic energy, its body marked with glowing sigils of forgotten languages, channeling arcane forces through its very being." },
+            { 21, "Eldritch power flows through its form, whispering secrets of the Void. It exudes an eerie aura, unsettling even the most seasoned mages." },
+            { 22, "Infused with sorcerous might, it draws unseen energies from the ether, bending elemental forces to its will with each movement." },
+            { 23, "A mystic force surrounds this creature, its mind in tune with celestial harmonies, its actions guided by unseen cosmic currents." },
+            { 24, "Arcane symbols dance in its wake, the very fabric of magic bending slightly around its presence as if reality itself takes notice." },
+            { 25, "This beast carries the mark of the occult, its gaze hinting at forbidden knowledge. Strange omens seem to follow wherever it treads." },
+            { 26, "A necrotic chill emanates from its form, the dark power of undeath coursing through its veins, bound by twisted sorcery." },
+            { 27, "Steeped in druidic power, it resonates with nature’s balance. Vines and leaves seem to stir as it passes, and the winds carry its whispers." },
+            { 28, "Ancient runes pulse upon its hide, binding it to forgotten oaths. Its very existence is entwined with the ley lines of the world." },
+            { 29, "Hexed by unseen forces, this creature carries a lingering curse. Dark magic clings to it, warping reality in small but noticeable ways." },
+            { 30, "A warlock’s familiar, this being pulses with raw infernal magic, its essence bound to long-forgotten pacts with entities beyond mortal ken." },
+            { 31, "Spellwoven energies dance through its body, its form stitched together by strands of pure magic, granting it an uncanny presence." },
+            // Tanky
+            { 32, "Forged by hardship, this creature's hide is as tough as orcish battle plate. It weathers blows that would shatter lesser beasts." },
+            { 33, "An unyielding force of nature, this beast does not falter, standing its ground even in the face of overwhelming odds." },
+            { 34, "Stalwart and steadfast, this creature moves with the discipline of a trained guardian, resisting harm with unwavering resolve." },
+            { 35, "Adamant in both body and spirit, its form is dense and unbreakable, shrugging off wounds that would cripple most creatures." },
+            { 36, "Ironclad and impervious, its armored flesh gleams like a knight’s polished breastplate, each step shaking the earth beneath it." },
+            // DPS
+            { 37, "Fierce and untamed, this creature fights with an unrelenting spirit, its fangs and claws striking with primal fury." },
+            { 38, "A savage hunter of the wilds, it tears into foes with a relentless aggression, its instincts honed for battle." },
+            { 39, "Brutal and merciless, each strike is delivered with the force of a war hammer, breaking bones and rending flesh with ease." },
+            { 40, "Bloodthirsty and insatiable, this beast revels in combat, its attacks growing ever more frenzied as it tastes victory." },
+            { 41, "Ruthless in the pursuit of dominance, it strikes with calculated precision, seeking the quickest path to a foe’s demise." },
+            // Elemental
+            { 42, "Wreathed in unholy flame, this creature bears the mark of the Abyss, its essence burning with demonic fire." },
+            { 43, "A being of endless winter, its presence chills the air, and its touch saps warmth from the living." },
+            { 44, "Reeking of decay and venom, this beast’s body seeps with lethal toxins, making every wound fester." },
+            { 45, "Crackling with arcane electricity, this creature surges with the power of Tempest, its strikes like bolts from the heavens." },
+            { 46, "Born from molten depths, its body pulses with liquid fire, searing all who dare approach its wrath." },
+            { 47, "As if sculpted from permafrost, its icy form is unyielding, and its breath carries the sting of glacial winds." },
+            { 48, "Coiled with a serpent’s cunning, this creature’s venom is a slow death, paralyzing and rotting its prey from within." },
+            { 49, "A living storm, its fury crashes like rolling thunder, each attack charged with the raw power of the skies." },
+            { 50, "Abyssal energies radiate from its form, its dark influence warping the very air around it, whispering secrets of the void." },
+            { 51, "Swept by the eternal winds, it moves with uncanny grace, its speed a blur that no mortal eye can follow." },
+            // Mythical/Lgendary
+            { 52, "Bathed in divine radiance, this creature moves with celestial grace, a living avatar of the virtues themselves." },
+            { 53, "Bearing the essence of dragons, its scales shimmer with arcane power, and its breath carries the whispers of wyrmkin." },
+            { 54, "Older than the histories of men, this being has walked the ages, its presence alone an echo of forgotten eras." },
+            { 55, "Bound by neither time nor decay, this creature endures eternally, its body and soul untouched by the ravages of fate." },
+            { 56, "A remnant of the world's first dawn, its primal might is unmatched, its power woven into the very fabric of Sosaria." },
+            { 57, "Forged by the hands of gods, its form is flawless, radiating the unyielding strength of celestial craftsmanship." },
+            { 58, "Beyond all earthly limits, this being exists on a higher plane, a force of nature unbound by mortal constraints." },
+            // Cursed/Negative
+            { 59, "This creature lacks vigor and spark, its dull eyes betraying an absence of strength or spirit." },
+            { 60, "Gaunt and feeble, it moves with great effort, each motion a struggle against its own frailty." },
+            { 61, "Ravaged by time or torment, its tattered form bears the scars of past suffering and neglect." },
+            { 62, "A husk of its former self, this withered beast seems barely held together by will alone." },
+            { 63, "Plagued by unseen afflictions, its blighted flesh festers with unnatural sickness." },
+            { 64, "Dark forces cling to this beast, its accursed form radiating an aura of misfortune." },
+            { 65, "Its hide is cracked and brittle, flaking away as if unable to contain its own failing essence." },
+            { 66, "A stench of decay follows this rotting creature, its flesh sloughing with every labored step." },
+            { 67, "Barely more than bone and sinew, this decayed being teeters between life and oblivion." },
+            { 68, "Its malformed body is twisted and unnatural, a mockery of what it was meant to be." },
+            { 69, "Something sinister lurks within its corrupted soul, its very presence unsettling to behold." },
+            { 70, "Misshapen and miserable, this wretched beast suffers under an invisible, ceaseless agony." },
+            { 71, "A dark omen follows this cursed creature, as though its very existence invites disaster." },
+            { 72, "Abandoned by fate, this forsaken beast is shunned even by the natural order." },
+            { 73, "Doomed from birth or by misdeed, its mere presence chills the bones of those who look upon it." },
+            { 99, "DEBUG: This should not be visible. If you see this, something is broken." }
+        };
+
+        public static string GetAdjectiveName(KoperPetData petData)
+        {
+            if (petData == null)
+                return "NULL";
+
+            return AdjectiveModifiers[petData.Adjective].Key;
+        }
         public static int GetRandomAdjective(KoperPetData newPet, BaseCreature oldPet)
         {
             int index = GetRandomNumber();
-            
+
             if (AdjectiveModifiers.ContainsKey(index))
             {
                 //Console.WriteLine("Got adjective index");
@@ -156,9 +262,9 @@ namespace Server.Custom.KoperPets
 
         private static int GetRandomNumber()
         {
-            lock(getrandom) // synchronize
+            lock (getrandom) // synchronize
             {
-                return getrandom.Next(0, AdjectiveModifiers.Count -1 ); // do not include 99, fallback/default stats
+                return getrandom.Next(0, AdjectiveModifiers.Count - 1); // do not include 99, fallback/default stats
             }
         }
 
@@ -175,6 +281,27 @@ namespace Server.Custom.KoperPets
             pet.Delta(MobileDelta.Name); // Forces client update
             //Console.WriteLine("[KoperPetManager] Renaming pet: " + pet.Serial);
 
+        }
+
+        public static List<string> SplitToLines(string text, int maxLineLength)
+        {
+            List<string> lines = new List<string>();
+
+            while (text.Length > maxLineLength)
+            {
+                int splitIndex = text.LastIndexOf(' ', maxLineLength); // Find last space within limit
+
+                if (splitIndex == -1) // If no space found, take the whole line
+                    splitIndex = maxLineLength;
+
+                lines.Add(text.Substring(0, splitIndex).Trim()); // Add the trimmed valid line
+                text = text.Substring(splitIndex + 1); // Move past the space, avoiding extra spaces
+            }
+
+            if (text.Length > 0) // Add remaining text
+                lines.Add(text.Trim());
+
+            return lines;
         }
 
         private static string StripExistingArticle(string baseName)

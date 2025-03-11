@@ -268,13 +268,13 @@ namespace Server.Custom.KoperPets
             return (pet.Serial.Value % 2 == 0) ? 0 : 1;
         }
 
-        public static string GetGender(BaseCreature pet)
+        public static string GetGender(KoperPetData petData)
         {
-            if (petDataCache[pet.Serial].Gender == 1)
+            if (petData.Gender == 1)
             {
                 return "Male";
             }
-            else if (petDataCache[pet.Serial].Gender == 0)
+            else if (petData.Gender == 0)
             {
                 return "Female";
             }
@@ -303,6 +303,15 @@ namespace Server.Custom.KoperPets
                 return petDataCache[pet.Serial];
             }
             return null;
+        }
+
+        public static bool ContainsPet(BaseCreature pet)
+        {
+            if (petDataCache.ContainsKey(pet.Serial))
+            {
+                return true;
+            }
+            return false;
         }
 
         public static void AwardXP(BaseCreature pet, Mobile attacked)
@@ -349,12 +358,19 @@ namespace Server.Custom.KoperPets
             petDataCache[pet.Serial] = data; // Ensure updated data is saved
         }
 
+        public static int GetXPNeeded(KoperPetData petData) 
+        {
+            int xpNeeded = petData.Level * (petData.Pedigree + 1) * 100;  // XP needed to level up (a level 1, pedigree 0, would require 100. A level 1 & 5 pedigree would require 500)
+
+
+            return xpNeeded;
+        }
         private static void CheckLevelUp(BaseCreature pet, KoperPetData petData)
         {
             if (pet == null || petData == null)
                 return;
 
-            int requiredXP = petData.Level * (petData.Pedigree + 1) * 100; // XP needed to level up (a level 1, pedigree 0, would require 100. A level 1 & 5 pedigree would require 500)
+            int requiredXP = GetXPNeeded(petData);
 
             while (petData.Experience >= requiredXP && petData.Level < petData.MaxLevel)
             {
@@ -364,7 +380,7 @@ namespace Server.Custom.KoperPets
 
                 Console.WriteLine(string.Format("[KoperPetManager] {0} leveled up to {1}!", pet.Name, petData.Level));
 
-                requiredXP = petData.Level * 100; // Update XP requirement for next level
+                requiredXP = GetXPNeeded(petData); // Update XP requirement for next level
             }
 
             if (petData.Level >= petData.MaxLevel)
